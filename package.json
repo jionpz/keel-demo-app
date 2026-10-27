@@ -1,0 +1,14 @@
+{
+  "name": "keel-demo-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A tiny todo app used to exercise the Keel loop end to end.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

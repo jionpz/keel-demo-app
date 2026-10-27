@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Todos</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Todo</h1>
+      <p class="hint">回车或点「添加」记录一件事。</p>
+    </header>
+
+    <form id="add-form" class="add">
+      <input id="new-todo" type="text" placeholder="要做点什么？" autocomplete="off" />
+      <button type="submit">添加</button>
+    </form>
+
+    <ul id="list" class="list"></ul>
+    <p id="empty" class="empty" hidden>还没有事项。</p>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
