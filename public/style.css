@@ -77,7 +77,42 @@ h1 {
   cursor: pointer;
 }
 
-.list { list-style: none; margin: 20px 0 0; padding: 0; }
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-top: 20px;
+}
+
+.filters { display: flex; gap: 6px; }
+
+.filter {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.filter:hover { border-color: var(--accent); color: var(--text); }
+
+.filter[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.filter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.remaining { margin: 0; color: var(--muted); font-size: 13px; }
+
+.list { list-style: none; margin: 12px 0 0; padding: 0; }
 
 .item {
   display: flex;

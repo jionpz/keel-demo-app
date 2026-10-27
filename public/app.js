@@ -1,4 +1,4 @@
-import { addTodo, removeTodo, toggleTodo } from '/src/todos.js'
+import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
 
 const STORAGE_KEY = 'keel-demo-todos'
 
@@ -6,8 +6,12 @@ const list = document.getElementById('list')
 const empty = document.getElementById('empty')
 const form = document.getElementById('add-form')
 const input = document.getElementById('new-todo')
+const remaining = document.getElementById('remaining')
+const filterButtons = Array.from(document.querySelectorAll('.filter'))
 
 let todos = load()
+// 当前筛选项仅存在于内存：刷新后回到「全部」，不写入 localStorage。
+let filter = 'all'
 
 function load() {
   try {
@@ -24,8 +28,10 @@ function save() {
 }
 
 function render() {
+  const visible = filterTodos(todos, filter)
+
   list.replaceChildren()
-  for (const todo of todos) {
+  for (const todo of visible) {
     const li = document.createElement('li')
     li.className = todo.done ? 'item done' : 'item'
 
@@ -57,7 +63,28 @@ function render() {
     li.append(label, remove)
     list.append(li)
   }
-  empty.hidden = todos.length > 0
+
+  // 计数始终基于全量 todos，与当前筛选无关。
+  remaining.textContent = `剩余 ${remainingCount(todos)} 项`
+
+  empty.hidden = visible.length > 0
+  if (visible.length === 0) {
+    empty.textContent = todos.length === 0 ? '还没有事项。' : '该筛选下没有事项。'
+  }
+}
+
+function applyFilter(next) {
+  filter = next
+  for (const button of filterButtons) {
+    const selected = button.dataset.filter === filter
+    button.classList.toggle('selected', selected)
+    button.setAttribute('aria-pressed', selected ? 'true' : 'false')
+  }
+  render()
+}
+
+for (const button of filterButtons) {
+  button.addEventListener('click', () => applyFilter(button.dataset.filter))
 }
 
 form.addEventListener('submit', (event) => {
@@ -68,4 +95,4 @@ form.addEventListener('submit', (event) => {
   render()
 })
 
-render()
+applyFilter('all')
