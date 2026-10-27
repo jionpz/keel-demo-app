@@ -19,6 +19,30 @@ export function removeTodo(todos, id) {
   return todos.filter((t) => t.id !== id)
 }
 
+/**
+ * 按完成状态筛选事项。
+ *
+ * - all / 未知取值：返回原数组（不复制、不改动）
+ * - active：只保留 done === false
+ * - done：只保留 done === true
+ *
+ * 纯函数：始终返回新数组或原数组，绝不修改入参。
+ */
+export function filterTodos(todos, filter) {
+  if (filter === 'active') return todos.filter((t) => t.done === false)
+  if (filter === 'done') return todos.filter((t) => t.done === true)
+  return todos
+}
+
+/** 统计未完成事项数量；只认 done === false。 */
+export function remainingCount(todos) {
+  let count = 0
+  for (const t of todos) {
+    if (t.done === false) count += 1
+  }
+  return count
+}
+
 function nextId(todos) {
   let max = 0
   for (const t of todos) {

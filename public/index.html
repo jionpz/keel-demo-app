@@ -18,6 +18,15 @@
       <button type="submit">添加</button>
     </form>
 
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="按完成状态筛选">
+        <button type="button" class="filter selected" data-filter="all" aria-pressed="true">全部</button>
+        <button type="button" class="filter" data-filter="active" aria-pressed="false">未完成</button>
+        <button type="button" class="filter" data-filter="done" aria-pressed="false">已完成</button>
+      </div>
+      <p id="remaining" class="remaining">剩余 0 项</p>
+    </div>
+
     <ul id="list" class="list"></ul>
     <p id="empty" class="empty" hidden>还没有事项。</p>
   </main>
