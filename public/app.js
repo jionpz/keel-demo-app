@@ -1,4 +1,4 @@
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
+import { addTodo, clearCompleted, filterTodos, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
 
 const STORAGE_KEY = 'keel-demo-todos'
 
@@ -7,6 +7,7 @@ const empty = document.getElementById('empty')
 const form = document.getElementById('add-form')
 const input = document.getElementById('new-todo')
 const remaining = document.getElementById('remaining')
+const clearButton = document.getElementById('clear-completed')
 const filterButtons = Array.from(document.querySelectorAll('.filter'))
 
 let todos = load()
@@ -29,6 +30,7 @@ function save() {
 
 function render() {
   const visible = filterTodos(todos, filter)
+  const hasCompleted = todos.some((t) => t.done === true)
 
   list.replaceChildren()
   for (const todo of visible) {
@@ -67,6 +69,9 @@ function render() {
   // 计数始终基于全量 todos，与当前筛选无关。
   remaining.textContent = `剩余 ${remainingCount(todos)} 项`
 
+  // 没有已完成事项时禁用批量清除。
+  clearButton.disabled = !hasCompleted
+
   empty.hidden = visible.length > 0
   if (visible.length === 0) {
     empty.textContent = todos.length === 0 ? '还没有事项。' : '该筛选下没有事项。'
@@ -86,6 +91,13 @@ function applyFilter(next) {
 for (const button of filterButtons) {
   button.addEventListener('click', () => applyFilter(button.dataset.filter))
 }
+
+// 只改 todos，不动 filter：清除后保持当前筛选。
+clearButton.addEventListener('click', () => {
+  todos = clearCompleted(todos)
+  save()
+  render()
+})
 
 form.addEventListener('submit', (event) => {
   event.preventDefault()

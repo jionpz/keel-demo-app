@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '../src/todos.js'
+import {
+  addTodo,
+  clearCompleted,
+  filterTodos,
+  remainingCount,
+  removeTodo,
+  toggleTodo,
+} from '../src/todos.js'
 
 test('addTodo 追加一条未完成事项', () => {
   const todos = addTodo([], '写周报')
@@ -83,6 +90,42 @@ test('filterTodos 不修改入参', () => {
   filterTodos(todos, 'all')
   assert.deepEqual(todos, snapshot)
   assert.equal(todos.length, 3)
+})
+
+// --- clearCompleted --------------------------------------------------------
+
+test('clearCompleted 只移除已完成事项并保持顺序', () => {
+  const left = clearCompleted(sample())
+  assert.deepEqual(left.map((t) => t.id), [1, 3])
+})
+
+test('clearCompleted 对全未完成列表返回等价内容', () => {
+  const todos = [
+    { id: 1, title: 'a', done: false },
+    { id: 2, title: 'b', done: false },
+  ]
+  assert.deepEqual(clearCompleted(todos), todos)
+})
+
+test('clearCompleted 对全已完成列表返回空数组', () => {
+  const todos = [
+    { id: 1, title: 'a', done: true },
+    { id: 2, title: 'b', done: true },
+  ]
+  assert.deepEqual(clearCompleted(todos), [])
+})
+
+test('clearCompleted 对空数组返回空数组', () => {
+  assert.deepEqual(clearCompleted([]), [])
+})
+
+test('clearCompleted 不修改入参', () => {
+  const todos = sample()
+  const snapshot = structuredClone(todos)
+  const left = clearCompleted(todos)
+  assert.deepEqual(todos, snapshot)
+  assert.equal(todos.length, 3)
+  assert.notEqual(left, todos)
 })
 
 // --- remainingCount --------------------------------------------------------

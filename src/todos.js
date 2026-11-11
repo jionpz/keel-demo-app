@@ -20,6 +20,16 @@ export function removeTodo(todos, id) {
 }
 
 /**
+ * 移除所有已完成事项。
+ *
+ * 只认 done === true；等价于 todos.filter((t) => t.done !== true)。
+ * 纯函数：始终返回新数组，绝不修改入参，顺序保持不变。
+ */
+export function clearCompleted(todos) {
+  return todos.filter((t) => t.done !== true)
+}
+
+/**
  * 按完成状态筛选事项。
  *
  * - all / 未知取值：返回原数组（不复制、不改动）
