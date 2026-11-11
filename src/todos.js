@@ -20,6 +20,17 @@ export function removeTodo(todos, id) {
 }
 
 /**
+ * 把外部输入（localStorage、DOM dataset 等）规范化为合法筛选项。
+ *
+ * 只接受 'all' / 'active' / 'done'；undefined、null、空串、未知值以及
+ * 非字符串输入一律回落到 'all'。纯函数且绝不抛错。
+ */
+export function parseFilter(value) {
+  if (value === 'active' || value === 'done') return value
+  return 'all'
+}
+
+/**
  * 按完成状态筛选事项。
  *
  * - all / 未知取值：返回原数组（不复制、不改动）

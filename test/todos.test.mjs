@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '../src/todos.js'
+import { addTodo, filterTodos, parseFilter, remainingCount, removeTodo, toggleTodo } from '../src/todos.js'
 
 test('addTodo 追加一条未完成事项', () => {
   const todos = addTodo([], '写周报')
@@ -83,6 +83,46 @@ test('filterTodos 不修改入参', () => {
   filterTodos(todos, 'all')
   assert.deepEqual(todos, snapshot)
   assert.equal(todos.length, 3)
+})
+
+// --- parseFilter -----------------------------------------------------------
+
+test('parseFilter 接受全部合法筛选项', () => {
+  for (const value of ['all', 'active', 'done']) {
+    assert.equal(parseFilter(value), value)
+  }
+})
+
+test('parseFilter 把未知取值回落到 all', () => {
+  for (const value of ['unknown', 'ALL', 'Active', 'done ', ' all', '0', 'true']) {
+    assert.equal(parseFilter(value), 'all')
+  }
+})
+
+test('parseFilter 把空值回落到 all', () => {
+  for (const value of [undefined, null, '', '   ', '\n']) {
+    assert.equal(parseFilter(value), 'all')
+  }
+})
+
+test('parseFilter 对非字符串输入回落到 all', () => {
+  for (const value of [0, 1, true, false, NaN, [], ['active'], {}, { filter: 'done' }, () => 'done']) {
+    assert.equal(parseFilter(value), 'all')
+  }
+})
+
+test('parseFilter 对任意存储值都不抛错', () => {
+  const values = ['{"filter":"done"}', '[1,2,3]', '\u0000', 'done\u0000', 'undefined', 'null']
+  for (const value of values) {
+    assert.doesNotThrow(() => parseFilter(value))
+    assert.equal(parseFilter(value), 'all')
+  }
+})
+
+test('parseFilter 的结果可直接用于 filterTodos', () => {
+  const todos = sample()
+  assert.deepEqual(filterTodos(todos, parseFilter('done')).map((t) => t.id), [2])
+  assert.deepEqual(filterTodos(todos, parseFilter('corrupted')).map((t) => t.id), [1, 2, 3])
 })
 
 // --- remainingCount --------------------------------------------------------
