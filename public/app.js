@@ -1,4 +1,4 @@
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
+import { addTodo, editTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
 
 const STORAGE_KEY = 'keel-demo-todos'
 
@@ -12,6 +12,8 @@ const filterButtons = Array.from(document.querySelectorAll('.filter'))
 let todos = load()
 // 当前筛选项仅存在于内存：刷新后回到「全部」，不写入 localStorage。
 let filter = 'all'
+// 正在编辑的事项 id，同样只是内存态；null 表示无编辑态。
+let editingId = null
 
 function load() {
   try {
@@ -32,6 +34,7 @@ function render() {
 
   list.replaceChildren()
   for (const todo of visible) {
+    const editing = todo.id === editingId
     const li = document.createElement('li')
     li.className = todo.done ? 'item done' : 'item'
 
@@ -45,10 +48,36 @@ function render() {
       render()
     })
 
-    const text = document.createElement('span')
-    text.textContent = todo.title
+    let editor = null
+    if (editing) {
+      label.className = 'editing'
+      editor = document.createElement('input')
+      editor.type = 'text'
+      editor.className = 'title-input'
+      editor.value = todo.title
+      editor.autocomplete = 'off'
+      bindEditor(editor, todo)
+      label.append(checkbox, editor)
+    } else {
+      const text = document.createElement('span')
+      text.textContent = todo.title
+      label.append(checkbox, text)
+    }
 
-    label.append(checkbox, text)
+    const actions = document.createElement('div')
+    actions.className = 'actions'
+
+    if (!editing) {
+      const edit = document.createElement('button')
+      edit.type = 'button'
+      edit.className = 'edit'
+      edit.textContent = '编辑'
+      edit.addEventListener('click', () => {
+        editingId = todo.id
+        render()
+      })
+      actions.append(edit)
+    }
 
     const remove = document.createElement('button')
     remove.type = 'button'
@@ -59,9 +88,15 @@ function render() {
       save()
       render()
     })
+    actions.append(remove)
 
-    li.append(label, remove)
+    li.append(label, actions)
     list.append(li)
+
+    if (editor !== null) {
+      editor.focus()
+      editor.select()
+    }
   }
 
   // 计数始终基于全量 todos，与当前筛选无关。
@@ -71,6 +106,39 @@ function render() {
   if (visible.length === 0) {
     empty.textContent = todos.length === 0 ? '还没有事项。' : '该筛选下没有事项。'
   }
+}
+
+/**
+ * 绑定编辑框的提交/取消。
+ *
+ * Escape 需要「取消且不能被随后的 blur 反写」：用一次性的 finished 标记，
+ * 无论 Escape、Enter、blur 谁先触发，只有第一次生效。
+ */
+function bindEditor(editor, todo) {
+  let finished = false
+
+  function finish(keep) {
+    if (finished) return
+    finished = true
+    if (keep) {
+      // 空白标题自然落到 editTodo 返回原数组的分支，等价于取消。
+      todos = editTodo(todos, todo.id, editor.value)
+      save()
+    }
+    editingId = null
+    render()
+  }
+
+  editor.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      finish(true)
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      finish(false)
+    }
+  })
+  editor.addEventListener('blur', () => finish(true))
 }
 
 function applyFilter(next) {
