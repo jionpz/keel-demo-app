@@ -1,6 +1,7 @@
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
+import { addTodo, filterTodos, parseFilter, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
 
 const STORAGE_KEY = 'keel-demo-todos'
+const FILTER_KEY = 'keel-demo-filter'
 
 const list = document.getElementById('list')
 const empty = document.getElementById('empty')
@@ -10,7 +11,6 @@ const remaining = document.getElementById('remaining')
 const filterButtons = Array.from(document.querySelectorAll('.filter'))
 
 let todos = load()
-// 当前筛选项仅存在于内存：刷新后回到「全部」，不写入 localStorage。
 let filter = 'all'
 
 function load() {
@@ -25,6 +25,15 @@ function load() {
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+}
+
+/** 读取持久化的筛选项；存储不可用或值非法时回落 'all'。 */
+function loadFilter() {
+  try {
+    return parseFilter(localStorage.getItem(FILTER_KEY))
+  } catch {
+    return 'all'
+  }
 }
 
 function render() {
@@ -74,7 +83,8 @@ function render() {
 }
 
 function applyFilter(next) {
-  filter = next
+  filter = parseFilter(next)
+  localStorage.setItem(FILTER_KEY, filter)
   for (const button of filterButtons) {
     const selected = button.dataset.filter === filter
     button.classList.toggle('selected', selected)
@@ -95,4 +105,4 @@ form.addEventListener('submit', (event) => {
   render()
 })
 
-applyFilter('all')
+applyFilter(loadFilter())

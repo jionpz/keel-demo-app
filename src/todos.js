@@ -34,6 +34,17 @@ export function filterTodos(todos, filter) {
   return todos
 }
 
+/**
+ * 校验持久化的筛选项。
+ *
+ * 只放行 'all' | 'active' | 'done'，其余（undefined、null、空串、大小写不符、
+ * 数字、对象等）一律回落到 'all'。逻辑是纯成员判断，不需要 try/catch，也不抛错。
+ */
+export function parseFilter(value) {
+  if (value === 'active' || value === 'done' || value === 'all') return value
+  return 'all'
+}
+
 /** 统计未完成事项数量；只认 done === false。 */
 export function remainingCount(todos) {
   let count = 0
