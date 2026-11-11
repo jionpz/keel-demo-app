@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '../src/todos.js'
+import { addTodo, editTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '../src/todos.js'
 
 test('addTodo 追加一条未完成事项', () => {
   const todos = addTodo([], '写周报')
@@ -42,6 +42,69 @@ test('removeTodo 删除指定事项', () => {
 test('removeTodo 对不存在的 id 是幂等的', () => {
   const todos = addTodo([], 'a')
   assert.deepEqual(removeTodo(todos, 999), todos)
+})
+
+// --- editTodo --------------------------------------------------------------
+
+test('editTodo 替换目标标题并保留其他事项', () => {
+  const todos = [
+    { id: 1, title: 'a', done: false },
+    { id: 2, title: 'b', done: false },
+    { id: 3, title: 'c', done: false },
+  ]
+  const next = editTodo(todos, 2, ' 新标题 ')
+  assert.notEqual(next, todos)
+  assert.equal(next.length, todos.length)
+  assert.deepEqual(next[1], { id: 2, title: '新标题', done: false })
+  assert.equal(next[0], todos[0])
+  assert.equal(next[2], todos[2])
+})
+
+test('editTodo 忽略空白标题并返回原数组', () => {
+  const todos = [
+    { id: 1, title: 'a', done: false },
+    { id: 2, title: 'b', done: true },
+  ]
+  assert.equal(editTodo(todos, 1, ''), todos)
+  assert.equal(editTodo(todos, 1, '   '), todos)
+  assert.equal(editTodo(todos, 1, null), todos)
+  assert.equal(editTodo(todos, 1, undefined), todos)
+  assert.deepEqual(todos, [
+    { id: 1, title: 'a', done: false },
+    { id: 2, title: 'b', done: true },
+  ])
+})
+
+test('editTodo 对不存在的 id 返回原数组', () => {
+  const todos = [
+    { id: 1, title: 'a', done: false },
+    { id: 2, title: 'b', done: true },
+  ]
+  assert.equal(editTodo(todos, 999, 'x'), todos)
+  assert.deepEqual(todos.map((t) => t.id), [1, 2])
+})
+
+test('editTodo 不修改入参', () => {
+  const todos = [
+    { id: 1, title: 'a', done: false },
+    { id: 2, title: 'b', done: true },
+  ]
+  const snapshot = structuredClone(todos)
+  const next = editTodo(todos, 1, '改了')
+  assert.deepEqual(todos, snapshot)
+  assert.equal(todos.length, 2)
+  assert.notEqual(next[0], todos[0])
+})
+
+test('editTodo 保留 done 状态', () => {
+  const done = editTodo([{ id: 1, title: 'a', done: true }], 1, 'b')
+  assert.equal(done[0].done, true)
+  assert.equal(done[0].title, 'b')
+  assert.equal(done[0].id, 1)
+
+  const active = editTodo([{ id: 2, title: 'c', done: false }], 2, 'd')
+  assert.equal(active[0].done, false)
+  assert.equal(active[0].id, 2)
 })
 
 // --- filterTodos -----------------------------------------------------------
