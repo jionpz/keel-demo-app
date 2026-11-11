@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '../src/todos.js'
+import {
+  addTodo,
+  filterTodos,
+  parseFilter,
+  remainingCount,
+  removeTodo,
+  toggleTodo,
+} from '../src/todos.js'
 
 test('addTodo 追加一条未完成事项', () => {
   const todos = addTodo([], '写周报')
@@ -83,6 +90,21 @@ test('filterTodos 不修改入参', () => {
   filterTodos(todos, 'all')
   assert.deepEqual(todos, snapshot)
   assert.equal(todos.length, 3)
+})
+
+// --- parseFilter -----------------------------------------------------------
+
+test('parseFilter 原样返回合法筛选项', () => {
+  assert.equal(parseFilter('all'), 'all')
+  assert.equal(parseFilter('active'), 'active')
+  assert.equal(parseFilter('done'), 'done')
+})
+
+test('parseFilter 对非法输入回落到 all', () => {
+  const invalid = [undefined, null, '', 'ALL', 'Active', 'unknown', 0, 1, true, {}, [], NaN]
+  for (const value of invalid) {
+    assert.equal(parseFilter(value), 'all')
+  }
 })
 
 // --- remainingCount --------------------------------------------------------
