@@ -1,6 +1,8 @@
-import { addTodo, filterTodos, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
+import { addTodo, filterTodos, parseFilter, remainingCount, removeTodo, toggleTodo } from '/src/todos.js'
 
 const STORAGE_KEY = 'keel-demo-todos'
+// 筛选项单独持久化：key 与 todos 不同，todos 的存储格式保持不变。
+const FILTER_STORAGE_KEY = 'keel-demo-filter'
 
 const list = document.getElementById('list')
 const empty = document.getElementById('empty')
@@ -10,8 +12,8 @@ const remaining = document.getElementById('remaining')
 const filterButtons = Array.from(document.querySelectorAll('.filter'))
 
 let todos = load()
-// 当前筛选项仅存在于内存：刷新后回到「全部」，不写入 localStorage。
-let filter = 'all'
+// 启动时恢复上次的筛选；未知或损坏的存储值由 parseFilter 回落到「全部」。
+let filter = loadFilter()
 
 function load() {
   try {
@@ -25,6 +27,23 @@ function load() {
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+}
+
+function loadFilter() {
+  try {
+    return parseFilter(localStorage.getItem(FILTER_STORAGE_KEY))
+  } catch {
+    // localStorage 不可用（隐私模式等）时保持默认「全部」。
+    return 'all'
+  }
+}
+
+function saveFilter() {
+  try {
+    localStorage.setItem(FILTER_STORAGE_KEY, filter)
+  } catch {
+    // 写入失败不影响本次会话内的筛选。
+  }
 }
 
 function render() {
@@ -74,7 +93,8 @@ function render() {
 }
 
 function applyFilter(next) {
-  filter = next
+  filter = parseFilter(next)
+  saveFilter()
   for (const button of filterButtons) {
     const selected = button.dataset.filter === filter
     button.classList.toggle('selected', selected)
@@ -95,4 +115,4 @@ form.addEventListener('submit', (event) => {
   render()
 })
 
-applyFilter('all')
+applyFilter(filter)
